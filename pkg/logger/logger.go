@@ -57,7 +57,7 @@ type Config struct {
 
 func ZapLogger(logger *zap.Logger) fiber.Handler {
 	conf := &Config{
-		UTC: true,
+		UTC:        true,
 		TimeFormat: time.RFC3339,
 	}
 
@@ -81,11 +81,15 @@ func ZapLogger(logger *zap.Logger) fiber.Handler {
 			var result any
 			json.Unmarshal(c.Response().Body(), &result)
 
-			var b map[string]any
-			c.BodyParser(&b)
+			body := func(c *fiber.Ctx) map[string]any {
+				var b map[string]any
+				c.BodyParser(&b)
 
-			if b["password"] != nil {
-				delete(b, "password")
+				if b["password"] != nil {
+					delete(b, "password")
+				}
+				return b
+
 			}
 
 			fields := []zapcore.Field{
@@ -96,7 +100,7 @@ func ZapLogger(logger *zap.Logger) fiber.Handler {
 				zap.String("ip", c.IP()),
 				zap.String(fiber.HeaderUserAgent, string(c.Context().UserAgent())),
 				zap.Duration("latency", latency),
-				zap.Any("body", b),
+				zap.Any("body", body(c)),
 				zap.String(fiber.HeaderXRequestID, c.GetRespHeader(fiber.HeaderXRequestID)),
 				zap.String(fiber.HeaderAccept, c.GetRespHeader(fiber.HeaderXRequestID)),
 				zap.Any(fiber.HeaderContentType, c.GetRespHeader(fiber.HeaderContentType)),
