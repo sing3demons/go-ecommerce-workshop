@@ -1,6 +1,8 @@
 package entities
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gofiber/fiber/v2"
+)
 
 type IResponse interface {
 	Success(code int, data interface{}) IResponse

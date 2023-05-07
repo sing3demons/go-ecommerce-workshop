@@ -1,11 +1,13 @@
 package main
 
 import (
+	"log"
 	"os"
 
 	"github.com/sing3demons/shop/config"
 	"github.com/sing3demons/shop/modules/servers"
 	"github.com/sing3demons/shop/pkg/database"
+	"github.com/sing3demons/shop/pkg/logger"
 )
 
 func envPath() string {
@@ -17,12 +19,20 @@ func envPath() string {
 }
 
 func main() {
+	logger, loggerClose, err := logger.NewLogger()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer loggerClose()
+
+	logger.Info("Starting application...")
 	cfg := config.LoadConfig(envPath())
 
 	db := database.DbConnect(cfg.DB())
 	// defer db.Close()
 
-	servers.NewServer(cfg, db).Start()
+	servers.NewServer(cfg, db).Start(logger)
 
 	// type User struct {
 	// 	Id       string `json:"id"`

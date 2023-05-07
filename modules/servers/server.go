@@ -9,8 +9,11 @@ import (
 	"syscall"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/jmoiron/sqlx"
 	"github.com/sing3demons/shop/config"
+	logMiddleware "github.com/sing3demons/shop/pkg/logger"
+	"go.uber.org/zap"
 )
 
 type server struct {
@@ -20,7 +23,7 @@ type server struct {
 }
 
 type IServer interface {
-	Start()
+	Start(logger *zap.Logger)
 }
 
 func NewServer(cfg config.IConfig, db *sqlx.DB) IServer {
@@ -38,7 +41,9 @@ func NewServer(cfg config.IConfig, db *sqlx.DB) IServer {
 	}
 }
 
-func (s *server) Start() {
+func (s *server) Start(logger *zap.Logger) {
+	s.app.Use(logMiddleware.ZapLogger(logger))
+	s.app.Use(requestid.New(requestid.ConfigDefault))
 
 	v1 := s.app.Group("/api/v1")
 	module := InitModule(v1, s)
