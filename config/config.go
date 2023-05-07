@@ -139,11 +139,11 @@ func (a *app) FileLimit() int {
 }
 
 type IDbConfig interface {
-	Url() string
+	Dsn() string
 	MaxOpenConns() int
 }
 
-func (d *db) Url() string {
+func (d *db) Dsn() string {
 	// return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", d.username, d.password,d.host,d.port,d.database,d.sslmode)
 	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		d.host, d.port, d.username, d.password, d.database, d.sslmode)
