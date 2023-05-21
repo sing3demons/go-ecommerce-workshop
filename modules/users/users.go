@@ -52,3 +52,21 @@ type UserPassport struct {
 	User *User `json:"user"`
 	Token *UserToken `json:"token"`
 }
+
+type UserCredential struct{
+	Email string `json:"email"`
+	Password string `json:"password"`
+}
+
+type UserCredentialCheck struct{
+	Id string `db:"id"`
+	Email string `db:"email"`
+	Password string `db:"password"`
+	Username string `db:"username"`
+	RoleId int `db:"role_id"`
+}
+
+type UserClaims struct{
+	Id string `json:"id" db:"id"`
+	RoleId int `json:"role_id" db:"role_id"`
+}

@@ -10,6 +10,7 @@ import (
 
 type IUserHandlers interface {
 	SignUpCustomer(c *fiber.Ctx) error
+	SignIn(c *fiber.Ctx) error
 }
 
 type userHandlers struct {
@@ -70,4 +71,16 @@ func (h *userHandlers) SignUpCustomer(c *fiber.Ctx) error {
 	}
 
 	return entities.NewResponse(c).Success(fiber.StatusCreated, result).Response()
+}
+
+func (h *userHandlers) SignIn(c *fiber.Ctx) error {
+	req := new(users.UserCredential)
+	if err := c.BodyParser(req); err != nil {
+		return entities.NewResponse(c).Error(fiber.ErrBadRequest.Code, string(signInErr), err.Error()).Response()
+	}
+	user, err := h.usecase.GetPassport(req)
+	if err != nil {
+		return entities.NewResponse(c).Error(fiber.ErrBadRequest.Code, string(signInErr), err.Error()).Response()
+	}
+	return entities.NewResponse(c).Success(fiber.StatusOK, user).Response()
 }
