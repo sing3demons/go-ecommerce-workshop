@@ -42,12 +42,17 @@ func NewServer(cfg config.IConfig, db *sqlx.DB) IServer {
 }
 
 func (s *server) Start(logger *zap.Logger) {
+	middleware := InitMiddleware(s)
 	s.app.Use(logMiddleware.ZapLogger(logger))
+	s.app.Use(middleware.Logger())
 	s.app.Use(requestid.New(requestid.ConfigDefault))
+	s.app.Use(middleware.Cors())
 
 	v1 := s.app.Group("/api/v1")
-	module := InitModule(v1, s)
+	module := InitModule(v1, s, middleware)
 	module.MonitorModule()
+
+	s.app.Use(middleware.RouterCheck())
 	//Graceful Shutdown
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
