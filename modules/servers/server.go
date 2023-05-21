@@ -51,6 +51,7 @@ func (s *server) Start(logger *zap.Logger) {
 	v1 := s.app.Group("/api/v1")
 	module := InitModule(v1, s, middleware)
 	module.MonitorModule()
+	module.UserModule()
 
 	s.app.Use(middleware.RouterCheck())
 	//Graceful Shutdown
