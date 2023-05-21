@@ -11,6 +11,7 @@ import (
 type IUserHandlers interface {
 	SignUpCustomer(c *fiber.Ctx) error
 	SignIn(c *fiber.Ctx) error
+	RefreshPassport(c *fiber.Ctx) error
 }
 
 type userHandlers struct {
@@ -81,6 +82,18 @@ func (h *userHandlers) SignIn(c *fiber.Ctx) error {
 	user, err := h.usecase.GetPassport(req)
 	if err != nil {
 		return entities.NewResponse(c).Error(fiber.ErrBadRequest.Code, string(signInErr), err.Error()).Response()
+	}
+	return entities.NewResponse(c).Success(fiber.StatusOK, user).Response()
+}
+
+func (h *userHandlers) RefreshPassport(c *fiber.Ctx) error {
+	req := new(users.UserRefreshCredential)
+	if err := c.BodyParser(req); err != nil {
+		return entities.NewResponse(c).Error(fiber.ErrBadRequest.Code, string(refreshPassportErr), err.Error()).Response()
+	}
+	user, err := h.usecase.RefreshPassport(req)
+	if err != nil {
+		return entities.NewResponse(c).Error(fiber.ErrBadRequest.Code, string(refreshPassportErr), err.Error()).Response()
 	}
 	return entities.NewResponse(c).Success(fiber.StatusOK, user).Response()
 }

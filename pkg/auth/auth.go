@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"time"
@@ -19,7 +20,7 @@ const (
 	ApiKey  TokenType = "api_key"
 )
 
-type IAuth interface{
+type IAuth interface {
 	SignToken() string
 }
 
@@ -88,4 +89,49 @@ func newRefresh(cfg config.IJwtConfig, claims *users.UserClaims) IAuth {
 		},
 		cfg: cfg,
 	}
+}
+
+func ParseToken(cfg config.IJwtConfig, tokenString string) (*MapClaims, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &MapClaims{}, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
+		}
+		return cfg.SecretKey(), nil
+	})
+
+	if err != nil {
+		if errors.Is(err, jwt.ErrTokenMalformed) {
+			return nil, fmt.Errorf("token malformed: %v", err)
+		} else if errors.Is(err, jwt.ErrSignatureInvalid) {
+			return nil, fmt.Errorf("token signature invalid: %v", err)
+		} else if errors.Is(err, jwt.ErrTokenExpired) {
+			return nil, fmt.Errorf("token expired: %v", err)
+		} else {
+			return nil, fmt.Errorf("token invalid: %v", err)
+		}
+	}
+
+	claims, ok := token.Claims.(*MapClaims)
+	if !ok || !token.Valid {
+		return nil, fmt.Errorf("token invalid: %v", err)
+	}
+	return claims, nil
+
+}
+
+func RepeatToken(cfg config.IJwtConfig, claims *users.UserClaims, exp int64) string {
+	obj := auth{
+		cfg: cfg,
+		mapClaims: &MapClaims{
+			Claims: claims,
+			RegisteredClaims: jwt.RegisteredClaims{
+				Subject:   claims.Id,
+				ExpiresAt: jwtTimeRepeatAdapter(exp),
+				Issuer:    "sing3demons",
+				NotBefore: jwt.NewNumericDate(time.Now()),
+				IssuedAt:  jwt.NewNumericDate(time.Now()),
+			},
+		},
+	}
+	return obj.SignToken()
 }

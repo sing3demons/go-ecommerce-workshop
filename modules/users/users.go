@@ -11,7 +11,7 @@ type User struct {
 	Id       string `db:"id" json:"id"`
 	Email    string `db:"email" json:"email"`
 	Username string `db:"username" json:"username"`
-	RoleId   int `db:"role_id" json:"role_id"`
+	RoleId   int    `db:"role_id" json:"role_id"`
 }
 
 type UserRegisterReq struct {
@@ -41,32 +41,40 @@ func (obj *UserRegisterReq) IsEmail() bool {
 	return match
 }
 
-type UserToken struct{
-	AccessToken string `json:"access_token" db:"access_token"`
+type UserToken struct {
+	AccessToken  string `json:"access_token" db:"access_token"`
 	RefreshToken string `json:"refresh_token" db:"refresh_token"`
-	Id string `json:"id" db:"id"`
+	Id           string `json:"id" db:"id"`
 }
 
-
 type UserPassport struct {
-	User *User `json:"user"`
+	User  *User      `json:"user"`
 	Token *UserToken `json:"token"`
 }
 
-type UserCredential struct{
-	Email string `json:"email"`
+type UserCredential struct {
+	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
-type UserCredentialCheck struct{
-	Id string `db:"id"`
-	Email string `db:"email"`
+type UserCredentialCheck struct {
+	Id       string `db:"id"`
+	Email    string `db:"email"`
 	Password string `db:"password"`
 	Username string `db:"username"`
-	RoleId int `db:"role_id"`
+	RoleId   int    `db:"role_id"`
 }
 
-type UserClaims struct{
-	Id string `json:"id" db:"id"`
-	RoleId int `json:"role_id" db:"role_id"`
+type UserClaims struct {
+	Id     string `json:"id" db:"id"`
+	RoleId int    `json:"role_id" db:"role_id"`
+}
+
+type UserRefreshCredential struct {
+	RefreshToken string `json:"refresh_token"`
+}
+
+type Oauth struct {
+	Id     string `db:"id" json:"id"`
+	UserId string `db:"user_id" json:"user_id"`
 }
